@@ -11,9 +11,9 @@
 const CONFIG = {
     // Google Sheets API Configuration
     // Get your API key from: https://console.cloud.google.com/apis/credentials
-    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY',
+    API_KEY: 'AIzaSyD_zwQym7_DzSmfWS-qhj5UEwtGdhi47uY',
     // Get your Sheet ID from the URL: https://docs.google.com/spreadsheets/d/SHEET_ID/edit
-    SHEET_ID: 'YOUR_GOOGLE_SHEET_ID',
+    SHEET_ID: '1_Vd6SZiNs4a734dU5PHOyFeIMmLtJEfwQJb3oxqE7eY',
     SHEET_RANGE: 'Weekly Audit for Offices',  // Change to your sheet name
     
     // Auto-refresh settings (in milliseconds)
