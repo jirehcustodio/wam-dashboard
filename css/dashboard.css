@@ -1,0 +1,796 @@
+/* ============================================
+   WAM Audit Dashboard - Custom Styles
+   Version: 2.0
+   ============================================ */
+
+/* CSS Variables for easy customization - Modern Minimalist Theme */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --light-bg: #f9fafb;
+    --dark-text: #1f2937;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --border-radius: 12px;
+    --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s ease;
+    --on-track-color: #10b981;
+    --off-track-color: #ef4444;
+}
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f9fafb;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    overflow-x: hidden;
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+/* ============================================
+   NAVIGATION BAR
+   ============================================ */
+
+.navbar {
+    background: white !important;
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: none;
+    transition: var(--transition);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--gray-900) !important;
+    letter-spacing: -0.5px;
+    transition: var(--transition);
+}
+
+.navbar-brand:hover {
+    color: var(--primary-color) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--gray-700) !important;
+    padding: 0.5rem 1rem !important;
+    transition: var(--transition);
+    font-size: 0.95rem;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+    background: var(--gray-100);
+    border-radius: 8px;
+}
+
+/* Modern Filter Section */
+.filter-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 2rem;
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    background: white;
+    color: var(--dark-text);
+    font-size: 0.875rem;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ============================================
+   STATISTICS CARDS
+   ============================================ */
+
+.stat-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    box-shadow: none;
+    transition: var(--transition);
+    overflow: hidden;
+    position: relative;
+    background: white;
+}
+
+.stat-card:hover {
+    box-shadow: var(--box-shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary-color);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    opacity: 0.2;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: var(--transition);
+}
+
+.stat-card:hover .stat-icon {
+    opacity: 0.3;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0;
+    transition: var(--transition);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* ============================================
+   CHART CONTAINERS
+   ============================================ */
+
+.chart-container {
+    position: relative;
+    min-height: 350px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    overflow: visible;
+}
+
+.chart-container:hover {
+    box-shadow: 0 10px 35px rgba(0,0,0,0.2);
+}
+
+.chart-container canvas {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+.chart-container h5 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Center pie chart canvas specifically */
+#pieChart {
+    display: block !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+}
+
+/* Bar chart canvas styling */
+#barChart {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+
+.progress-modern {
+    height: 30px;
+    border-radius: 15px;
+    background: #e9ecef;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.progress-bar-modern {
+    border-radius: 15px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    transition: width 0.6s ease;
+}
+
+/* ============================================
+   DATA TABLE
+   ============================================ */
+
+.data-table-container {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: var(--box-shadow);
+    overflow-x: auto;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.table thead th:hover {
+    background: var(--secondary-color);
+    transform: scale(1.02);
+}
+
+.table tbody tr {
+    transition: var(--transition);
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge-custom {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+.badge-custom:hover {
+    transform: scale(1.05);
+}
+
+/* ============================================
+   SYNC INDICATOR
+   ============================================ */
+
+.sync-indicator {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: white;
+    box-shadow: var(--box-shadow);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.sync-indicator:hover {
+    transform: scale(1.05);
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.5; 
+        transform: scale(1.1);
+    }
+}
+
+/* ============================================
+   SECTION TITLES
+   ============================================ */
+
+.section-title {
+    color: var(--gray-900);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+    transition: var(--transition);
+}
+
+.section-subtitle {
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.export-btn {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.export-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn {
+    transition: var(--transition);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* ============================================
+   LOADING OVERLAY
+   ============================================ */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.spinner-custom {
+    width: 80px;
+    height: 80px;
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   METRIC CARDS
+   ============================================ */
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.3);
+}
+
+.metric-card h6 {
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.metric-card strong {
+    font-size: 1.2rem;
+}
+
+/* ============================================
+   SEARCH BOX
+   ============================================ */
+
+.search-box-modern {
+    border-radius: 25px;
+    border: 2px solid #dee2e6;
+    padding: 10px 20px;
+    transition: var(--transition);
+}
+
+.search-box-modern:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25);
+    outline: none;
+    transform: scale(1.02);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+footer {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    margin-top: 50px;
+    border-radius: var(--border-radius);
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 992px) {
+    .stat-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+        padding: 15px;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .sync-indicator {
+        top: 60px;
+        right: 10px;
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .data-table-container {
+        padding: 15px;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .metric-card {
+        padding: 15px;
+    }
+    
+    .stat-card {
+        margin-bottom: 15px;
+    }
+    
+    .chart-container {
+        height: 220px;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-lg-custom {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+}
+
+.border-gradient {
+    border: 2px solid;
+    border-image: linear-gradient(90deg, var(--primary-color), var(--secondary-color)) 1;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .navbar,
+    .sync-indicator,
+    .export-btn,
+    footer {
+        display: none;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .stat-card,
+    .chart-container,
+    .data-table-container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================
+   OFFICE DETAILS MODAL
+   ============================================ */
+
+.office-details-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.office-details-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.office-details-modal h4 {
+    color: var(--dark-text);
+    font-weight: 700;
+}
+
+.office-details-modal .table {
+    font-size: 0.9rem;
+}
+
+.office-details-modal .table thead {
+    background: var(--gray-100);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.office-details-modal .table th {
+    font-weight: 600;
+    color: var(--dark-text);
+    border-bottom: 2px solid var(--gray-300);
+    white-space: nowrap;
+}
+
+.office-details-modal .table td {
+    vertical-align: middle;
+}
+
+.office-details-modal .table-hover tbody tr:hover {
+    background-color: var(--gray-100);
+    cursor: default;
+}
+
+/* ============================================
+   CIRCULAR PROGRESS RINGS
+   ============================================ */
+
+.circular-progress {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.circular-progress svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.circular-progress circle {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.circular-progress .circle-bg {
+    stroke: #e5e7eb;
+}
+
+.circular-progress .circle-progress {
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 565.48;
+}
+
+.circular-progress .on-track {
+    stroke: #10b981;
+}
+
+.circular-progress .off-track {
+    stroke: #ef4444;
+}
+
+.circular-progress .percentage-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.circular-progress .percentage-text .number {
+    display: block;
+    line-height: 1;
+}
+
+.circular-progress .percentage-text .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}

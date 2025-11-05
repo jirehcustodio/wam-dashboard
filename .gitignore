@@ -1,0 +1,71 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+
+# Documentation development files (keep only main README)
+DEBUG-*.md
+FIX-*.md
+TROUBLESHOOTING.md
+FILE-STRUCTURE-GUIDE.md
+FEATURES-GUIDE.md
+ACTIVE-SHEET-INFO.md
+DASHBOARD-COMPLETE.md
+QUICK-START.md
+README-DASHBOARD.md
+
+# Test files
+test-*.html
+debug-*.html
+
+# Old versions
+*.old
+dashboard.html
+index.html
