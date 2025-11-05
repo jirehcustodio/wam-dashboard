@@ -67,5 +67,4 @@ debug-*.html
 
 # Old versions
 *.old
-dashboard.html
-index.html
+# Note: index.html is now our main file (renamed from dashboard-modular.html)
