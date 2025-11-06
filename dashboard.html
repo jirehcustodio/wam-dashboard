@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WAM Audit Dashboard - Real-time data synchronization with Google Sheets">
+    <meta name="author" content="WAM Team">
+    <title>WAM Audit Dashboard - Real-Time Analytics</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- ========== EXTERNAL LIBRARIES (CDN) ========== -->
+    
+    <!-- Bootstrap 5 CSS - UI Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons - Icon Library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Animate.css - Animation Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Chart.js - Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- ========== CUSTOM STYLES ========== -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <!-- ========== AUTHENTICATION CHECK ========== -->
+    <script>
+        // Check if user is authenticated
+        (function() {
+            const sessionData = localStorage.getItem('wamSession');
+            if (!sessionData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            try {
+                const session = JSON.parse(sessionData);
+                if (Date.now() >= session.expiresAt) {
+                    localStorage.removeItem('wamSession');
+                    alert('Session expired. Please login again.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                // Session is valid, continue loading
+                console.log('Authenticated as:', session.username);
+            } catch (e) {
+                localStorage.removeItem('wamSession');
+                window.location.href = 'index.html';
+            }
+        })();
+    </script>
+    
+</head>
+<body>
+    
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="text-center">
+            <div class="spinner-custom"></div>
+            <p class="text-white mt-3 fs-5">Loading data from Google Sheets...</p>
+        </div>
+    </div>
+
+    <!-- ========== SYNC STATUS INDICATOR ========== -->
+    <div id="syncIndicator" class="sync-indicator">
+        <i class="bi bi-arrow-repeat pulse-animation"></i>
+        <span id="syncText">Initializing...</span>
+    </div>
+
+    <!-- ========== NAVIGATION BAR ========== -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-graph-up-arrow"></i>
+                WAM Audit Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#overview">
+                            <i class="bi bi-speedometer2"></i> Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analytics">
+                            <i class="bi bi-bar-chart"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#data">
+                            <i class="bi bi-table"></i> Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-primary btn-sm ms-2" onclick="refreshData()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-success btn-sm ms-2" onclick="exportToCSV()">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-danger btn-sm ms-2" onclick="logout()" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('wamSession');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Display logged in user
+        window.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('wamSession');
+            if (sessionData) {
+                try {
+                    const session = JSON.parse(sessionData);
+                    console.log('Logged in as:', session.username);
+                    // You can display username in navbar if desired
+                } catch (e) {}
+            }
+        });
+    </script>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="container-fluid py-4">
+        
+        <!-- Message Area for notifications -->
+        <div id="messageArea"></div>
+        
+        <!-- ========== FILTERS SECTION ========== -->
+        <section class="mb-4">
+            <div class="filter-section animate__animated animate__fadeInDown" id="filterSection">
+                <!-- Filters will be dynamically generated by JavaScript -->
+            </div>
+        </section>
+        
+        <!-- ========== DASHBOARD OVERVIEW SECTION ========== -->
+        <section id="overview" class="mb-5">
+            <h2 class="section-title animate__animated animate__fadeInDown">
+                <i class="bi bi-speedometer2"></i> Dashboard Overview
+            </h2>
+            
+            <!-- Summary Statistics Cards -->
+            <div class="row g-4" id="summaryCards">
+                <!-- Cards will be dynamically generated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- ========== ROCK REVIEW ANALYSIS SECTION ========== -->
+        <section id="rockReview" class="mb-5">
+            <h2 class="section-title animate__animated animate__fadeInDown">
+                <i class="bi bi-bullseye"></i> Rock Review (Column E) Analysis
+            </h2>
+            <p class="section-subtitle">Track On-Track vs Off-Track performance metrics</p>
+            
+            <div class="row g-4">
+                <!-- Performance Summary with Circular Progress -->
+                <div class="col-lg-12">
+                    <div class="chart-container animate__animated animate__fadeInUp">
+                        <h5 class="mb-4 text-center">
+                            <i class="bi bi-bullseye"></i> Performance Summary
+                        </h5>
+                        <div class="row justify-content-center">
+                            <div class="col-md-4 col-sm-6">
+                                <div class="text-center">
+                                    <div class="circular-progress" id="onTrackCircle">
+                                        <!-- On-Track circular progress -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="text-center">
+                                    <div class="circular-progress" id="offTrackCircle">
+                                        <!-- Off-Track circular progress -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== KPI METRICS SECTION ========== -->
+        <section class="mb-5">
+            <div class="row g-4" id="kpiMetrics">
+                <!-- KPI cards will be dynamically generated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- ========== ANALYTICS & VISUALIZATIONS SECTION ========== -->
+        <section id="analytics" class="mb-5">
+            <h2 class="section-title animate__animated animate__fadeInDown">
+                <i class="bi bi-bar-chart-fill"></i> Data Analytics & Visualizations
+            </h2>
+            
+            <!-- Pie & Bar Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="chart-container animate__animated animate__fadeInLeft" style="height: 500px;">
+                        <h5 class="mb-3">
+                            <i class="bi bi-building"></i> Office Distribution
+                        </h5>
+                        <p class="text-muted small mb-3">Records by office location</p>
+                        <div style="position: relative; height: 410px; display: flex; align-items: center; justify-content: center;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container animate__animated animate__fadeInRight" style="height: 500px;">
+                        <h5 class="mb-3">
+                            <i class="bi bi-bar-chart-fill"></i> Office Performance Comparison
+                        </h5>
+                        <p class="text-muted small mb-3">On-Track vs Off-Track by office</p>
+                        <div id="barChartStatus" style="padding: 10px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 4px; margin-bottom: 10px; font-size: 12px; display: none;">
+                            <strong>Status:</strong> <span id="barChartStatusText">Loading...</span>
+                        </div>
+                        <div id="barChartWrapper" style="position: relative; width: 100%; height: 400px;">
+                            <canvas id="barChart" style="display: block;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Chart Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="chart-container animate__animated animate__fadeInUp" style="height: 700px !important; min-height: 700px !important; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h5 class="mb-3" style="font-size: 1.5rem; font-weight: 600;">
+                            <i class="bi bi-graph-up"></i> Performance Trend Over Time
+                        </h5>
+                        <p class="text-muted mb-4" style="font-size: 1rem;">
+                            <span class="badge bg-success me-2" style="font-size: 0.9rem; padding: 8px 12px;">Green Line:</span> Percentage of On-Track audits each month
+                            <span class="badge bg-primary ms-3 me-2" style="font-size: 0.9rem; padding: 8px 12px;">Blue Line:</span> Total number of audit records completed each month
+                        </p>
+                        <div id="lineChartStatus" style="padding: 10px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 4px; margin-bottom: 10px; font-size: 12px; display: none;">
+                            <strong>Status:</strong> <span id="lineChartStatusText">Loading...</span>
+                        </div>
+                        <div id="chartDebugInfo" style="padding: 8px; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 4px; margin-bottom: 10px; font-size: 11px; font-family: monospace; display: none;">
+                            <strong>📐 Canvas Size:</strong> <span id="canvasDimensions">Measuring...</span>
+                        </div>
+                        <div style="position: relative; height: 450px !important; width: 100%;">
+                            <canvas id="lineChart" style="height: 450px !important; width: 100% !important; display: block !important;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bars -->
+            <div class="row g-4" id="progressBars">
+                <!-- Progress bars will be dynamically generated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- ========== DATA TABLE SECTION ========== -->
+        <section id="data" class="mb-5">
+            <h2 class="section-title animate__animated animate__fadeInDown">
+                <i class="bi bi-table"></i> Complete Data Table
+            </h2>
+            
+            <div class="data-table-container animate__animated animate__fadeInUp">
+                <!-- Search and Control Bar -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <input type="text" id="searchBox" class="form-control search-box-modern" 
+                               placeholder="🔍 Search across all data..." onkeyup="filterTable()">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="toggleColumnSelector()">
+                                <i class="bi bi-eye"></i> Show/Hide Columns
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportFilteredData()">
+                                <i class="bi bi-download"></i> Export Filtered
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="text-muted small">
+                            <i class="bi bi-clock"></i> 
+                            Auto-refresh: 2 min | Last: <strong id="lastSync">--</strong>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Column Selector (Hidden by default) -->
+                <div id="columnSelector" class="card mb-3" style="display: none;">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-eye"></i> Select Columns to Display:</h6>
+                        <div id="columnCheckboxes" class="row">
+                            <!-- Column checkboxes will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div class="row mb-2 align-items-center">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small mb-0">Show:</label>
+                            <select id="rowsPerPage" class="form-select form-select-sm" style="width: auto;" onchange="changeRowsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">All</option>
+                            </select>
+                            <span class="small text-muted">entries</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="small text-muted">
+                            Showing <strong id="showingRange">1-25</strong> of <strong id="totalRows">0</strong> records
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped" id="dataTable">
+                        <thead id="tableHead" class="table-light sticky-top">
+                            <!-- Table headers will be dynamically generated -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Table rows will be dynamically generated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Navigation -->
+                <div class="row mt-3 align-items-center">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Click headers to sort. 
+                            Total: <strong id="rowCount">0</strong> records
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination pagination-sm justify-content-end mb-0" id="paginationControls">
+                                <!-- Pagination buttons will be dynamically generated -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== FOOTER ========== -->
+        <footer class="text-center text-white py-4">
+            <p class="mb-0">
+                <i class="bi bi-shield-check"></i> 
+                WAM Audit Dashboard © 2025 | 
+                <i class="bi bi-lightning-charge-fill"></i> Real-time sync enabled
+            </p>
+            <p class="mb-0 mt-2">
+                <small>
+                    <i class="bi bi-code-slash"></i> Built with Bootstrap 5, Chart.js & Google Sheets API
+                </small>
+            </p>
+        </footer>
+    </div>
+
+    <!-- ========== JAVASCRIPT LIBRARIES ========== -->
+    
+    <!-- Bootstrap Bundle JS (includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    
+    <!-- ========== CUSTOM JAVASCRIPT ========== -->
+    <script src="js/dashboard.js"></script>
+    
+</body>
+</html>
