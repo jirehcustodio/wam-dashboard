@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - WAM Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 WAM Dashboard - Connection Test</h1>
+    <p>This page will help diagnose connection issues. Share this URL with users who can't access the dashboard.</p>
+
+    <div class="test-box">
+        <h3>Test 1: API Key Status</h3>
+        <div id="apiKeyStatus" class="status loading">Testing API key...</div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 2: Google Sheet Access</h3>
+        <div id="sheetStatus" class="status loading">Testing sheet access...</div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 3: Data Retrieval</h3>
+        <div id="dataStatus" class="status loading">Testing data fetch...</div>
+        <pre id="dataPreview" style="display:none;"></pre>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 4: Browser & Network Info</h3>
+        <div id="browserInfo"></div>
+    </div>
+
+    <div class="test-box">
+        <button onclick="runTests()">🔄 Run Tests Again</button>
+        <button onclick="copyResults()" style="background: #28a745;">📋 Copy Results</button>
+    </div>
+
+    <div class="test-box" id="results" style="display:none;">
+        <h3>📊 Test Results Summary</h3>
+        <pre id="resultsSummary"></pre>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_KEY: 'AIzaSyD_zwQym7_DzSmfWS-qhj5UEwtGdhi47uY',
+            SHEET_ID: '1_Vd6SZiNs4a734dU5PHOyFeIMmLtJEfwQJb3oxqE7eY',
+            SHEET_RANGE: 'Weekly Audit for Offices'
+        };
+
+        let testResults = {};
+
+        async function runTests() {
+            console.log('Starting connection tests...');
+            
+            // Reset statuses
+            document.getElementById('apiKeyStatus').className = 'status loading';
+            document.getElementById('apiKeyStatus').textContent = 'Testing API key...';
+            document.getElementById('sheetStatus').className = 'status loading';
+            document.getElementById('sheetStatus').textContent = 'Testing sheet access...';
+            document.getElementById('dataStatus').className = 'status loading';
+            document.getElementById('dataStatus').textContent = 'Testing data fetch...';
+
+            testResults = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                tests: {}
+            };
+
+            // Test 1: API Key
+            try {
+                const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}?key=${CONFIG.API_KEY}`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('apiKeyStatus').className = 'status success';
+                    document.getElementById('apiKeyStatus').textContent = '✅ API Key is valid and working!';
+                    testResults.tests.apiKey = { status: 'success', message: 'API key valid' };
+                } else {
+                    throw new Error(data.error.message || 'API key error');
+                }
+            } catch (error) {
+                document.getElementById('apiKeyStatus').className = 'status error';
+                document.getElementById('apiKeyStatus').textContent = '❌ API Key Error: ' + error.message;
+                testResults.tests.apiKey = { status: 'error', message: error.message };
+            }
+
+            // Test 2: Sheet Access
+            try {
+                const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE}?key=${CONFIG.API_KEY}`;
+                const response = await fetch(sheetUrl);
+                const data = await response.json();
+                
+                if (response.ok && data.values) {
+                    document.getElementById('sheetStatus').className = 'status success';
+                    document.getElementById('sheetStatus').textContent = `✅ Sheet accessible! Found ${data.values.length} rows`;
+                    testResults.tests.sheetAccess = { status: 'success', rows: data.values.length };
+                } else {
+                    throw new Error(data.error?.message || 'Cannot access sheet');
+                }
+            } catch (error) {
+                document.getElementById('sheetStatus').className = 'status error';
+                document.getElementById('sheetStatus').textContent = '❌ Sheet Access Error: ' + error.message;
+                testResults.tests.sheetAccess = { status: 'error', message: error.message };
+            }
+
+            // Test 3: Data Retrieval
+            try {
+                const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE}?key=${CONFIG.API_KEY}`;
+                const response = await fetch(dataUrl);
+                const data = await response.json();
+                
+                if (response.ok && data.values && data.values.length > 3) {
+                    document.getElementById('dataStatus').className = 'status success';
+                    document.getElementById('dataStatus').textContent = `✅ Data retrieved successfully! ${data.values.length} rows`;
+                    
+                    // Show preview
+                    const preview = {
+                        totalRows: data.values.length,
+                        headers: data.values[2],
+                        sampleData: data.values.slice(3, 6)
+                    };
+                    document.getElementById('dataPreview').textContent = JSON.stringify(preview, null, 2);
+                    document.getElementById('dataPreview').style.display = 'block';
+                    testResults.tests.dataRetrieval = { status: 'success', rows: data.values.length };
+                } else {
+                    throw new Error('No data found or insufficient rows');
+                }
+            } catch (error) {
+                document.getElementById('dataStatus').className = 'status error';
+                document.getElementById('dataStatus').textContent = '❌ Data Error: ' + error.message;
+                testResults.tests.dataRetrieval = { status: 'error', message: error.message };
+            }
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('resultsSummary').textContent = JSON.stringify(testResults, null, 2);
+        }
+
+        function copyResults() {
+            const results = document.getElementById('resultsSummary').textContent;
+            navigator.clipboard.writeText(results).then(() => {
+                alert('✅ Results copied to clipboard! Send this to support.');
+            });
+        }
+
+        // Display browser info
+        window.addEventListener('DOMContentLoaded', () => {
+            const info = `
+                <strong>Browser:</strong> ${navigator.userAgent}<br>
+                <strong>URL:</strong> ${window.location.href}<br>
+                <strong>Protocol:</strong> ${window.location.protocol}<br>
+                <strong>Online:</strong> ${navigator.onLine ? 'Yes' : 'No'}<br>
+                <strong>Cookies Enabled:</strong> ${navigator.cookieEnabled ? 'Yes' : 'No'}<br>
+                <strong>Language:</strong> ${navigator.language}<br>
+                <strong>Screen:</strong> ${screen.width}x${screen.height}<br>
+                <strong>Viewport:</strong> ${window.innerWidth}x${window.innerHeight}
+            `;
+            document.getElementById('browserInfo').innerHTML = info;
+
+            // Auto-run tests on load
+            runTests();
+        });
+    </script>
+</body>
+</html>
