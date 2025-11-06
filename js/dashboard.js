@@ -2174,6 +2174,7 @@ function parseDate(dateStr) {
  * Export dashboard to PDF with charts
  */
 async function exportToPDF() {
+    console.log('📄 exportToPDF() called');
     try {
         // Check if jsPDF is loaded
         if (!window.jspdf) {
@@ -2181,6 +2182,14 @@ async function exportToPDF() {
             console.error('jsPDF library not found');
             return;
         }
+        console.log('✅ jsPDF library loaded');
+
+        // Check if charts exist
+        console.log('Charts available:', {
+            pieChart: !!appState.charts.pieChart,
+            barChart: !!appState.charts.barChart,
+            lineChart: !!appState.charts.lineChart
+        });
 
         showMessage('Generating PDF... This may take a moment', 'info');
         
@@ -2314,7 +2323,9 @@ async function exportToPDF() {
         
         // Save PDF
         const filename = `MyNaga_WAM_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        console.log('💾 Saving PDF as:', filename);
         pdf.save(filename);
+        console.log('✅ PDF save() called successfully');
         
         showMessage('PDF exported successfully!', 'success');
         
