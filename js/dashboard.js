@@ -2169,6 +2169,251 @@ console.log('Auto-refresh:', CONFIG.AUTO_REFRESH_INTERVAL / 60000, 'minutes');
 console.log('Sheet ID:', CONFIG.SHEET_ID);
 
 // ============================================
+// ADVANCED FILTERING FUNCTIONS
+// ============================================
+
+/**
+ * Initialize filter dropdowns with unique values
+ */
+function initializeFilters() {
+    if (!appState.sheetData || appState.sheetData.length < 4) return;
+    
+    const headers = appState.sheetData[2]; // Row 3 contains headers
+    const dataRows = appState.sheetData.slice(3); // Data starts from row 4
+    
+    // Get unique offices
+    const officeIndex = 0; // Column A
+    const uniqueOffices = [...new Set(dataRows.map(row => row[officeIndex]).filter(Boolean))];
+    
+    // Get unique personnel
+    const personnelIndex = 1; // Column B
+    const uniquePersonnel = [...new Set(dataRows.map(row => row[personnelIndex]).filter(Boolean))];
+    
+    // Populate Office dropdown
+    const officeSelect = document.getElementById('officeFilter');
+    if (officeSelect) {
+        officeSelect.innerHTML = '<option value="">All Offices</option>';
+        uniqueOffices.sort().forEach(office => {
+            officeSelect.innerHTML += `<option value="${office}">${office}</option>`;
+        });
+    }
+    
+    // Populate Personnel dropdown
+    const personnelSelect = document.getElementById('personnelFilter');
+    if (personnelSelect) {
+        personnelSelect.innerHTML = '<option value="">All Personnel</option>';
+        uniquePersonnel.sort().forEach(person => {
+            personnelSelect.innerHTML += `<option value="${person}">${person}</option>`;
+        });
+    }
+    
+    console.log('Filters initialized:', uniqueOffices.length, 'offices,', uniquePersonnel.length, 'personnel');
+}
+
+/**
+ * Apply filters to the data
+ */
+function applyFilters() {
+    if (!appState.sheetData || appState.sheetData.length < 4) {
+        showMessage('No data to filter', 'warning');
+        return;
+    }
+    
+    const dateFrom = document.getElementById('dateFrom')?.value;
+    const dateTo = document.getElementById('dateTo')?.value;
+    const selectedOffices = Array.from(document.getElementById('officeFilter')?.selectedOptions || [])
+        .map(opt => opt.value).filter(Boolean);
+    const selectedPersonnel = Array.from(document.getElementById('personnelFilter')?.selectedOptions || [])
+        .map(opt => opt.value).filter(Boolean);
+    const selectedStatus = document.getElementById('statusFilter')?.value;
+    
+    const headers = appState.sheetData[2];
+    let dataRows = appState.sheetData.slice(3);
+    
+    // Filter by date range
+    if (dateFrom || dateTo) {
+        const dateIndex = 9; // Column J - Audit Date
+        dataRows = dataRows.filter(row => {
+            const rowDate = parseDate(row[dateIndex]);
+            if (!rowDate) return false;
+            
+            if (dateFrom && dateTo) {
+                return rowDate >= new Date(dateFrom) && rowDate <= new Date(dateTo);
+            } else if (dateFrom) {
+                return rowDate >= new Date(dateFrom);
+            } else if (dateTo) {
+                return rowDate <= new Date(dateTo);
+            }
+            return true;
+        });
+    }
+    
+    // Filter by office
+    if (selectedOffices.length > 0) {
+        const officeIndex = 0;
+        dataRows = dataRows.filter(row => selectedOffices.includes(row[officeIndex]));
+    }
+    
+    // Filter by personnel
+    if (selectedPersonnel.length > 0) {
+        const personnelIndex = 1;
+        dataRows = dataRows.filter(row => selectedPersonnel.includes(row[personnelIndex]));
+    }
+    
+    // Filter by status
+    if (selectedStatus) {
+        const statusIndex = 4; // Column E - Rock Review
+        dataRows = dataRows.filter(row => {
+            const status = row[statusIndex]?.toString().trim();
+            return status === selectedStatus;
+        });
+    }
+    
+    // Update filtered data
+    appState.filteredData = [appState.sheetData[0], appState.sheetData[1], headers, ...dataRows];
+    
+    // Update UI
+    updateActiveFiltersDisplay();
+    renderDashboardWithFilteredData();
+    
+    showMessage(`Filters applied: ${dataRows.length} records found`, 'success');
+}
+
+/**
+ * Quick filter presets
+ */
+function quickFilter(type) {
+    const today = new Date();
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const statusFilter = document.getElementById('statusFilter');
+    
+    // Reset filters first
+    resetFilters(false);
+    
+    switch(type) {
+        case 'today':
+            const todayStr = today.toISOString().split('T')[0];
+            dateFrom.value = todayStr;
+            dateTo.value = todayStr;
+            break;
+            
+        case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            dateFrom.value = weekAgo.toISOString().split('T')[0];
+            dateTo.value = today.toISOString().split('T')[0];
+            break;
+            
+        case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(today.getMonth() - 1);
+            dateFrom.value = monthAgo.toISOString().split('T')[0];
+            dateTo.value = today.toISOString().split('T')[0];
+            break;
+            
+        case 'offtrack':
+            statusFilter.value = 'Off-Track';
+            break;
+    }
+    
+    applyFilters();
+}
+
+/**
+ * Reset all filters
+ */
+function resetFilters(refresh = true) {
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    document.getElementById('officeFilter').selectedIndex = 0;
+    document.getElementById('personnelFilter').selectedIndex = 0;
+    document.getElementById('statusFilter').selectedIndex = 0;
+    
+    appState.filteredData = [];
+    document.getElementById('activeFilters').style.display = 'none';
+    
+    if (refresh) {
+        renderDashboardWithFilteredData();
+        showMessage('Filters reset', 'info');
+    }
+}
+
+/**
+ * Update active filters display
+ */
+function updateActiveFiltersDisplay() {
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    const tags = [];
+    
+    const dateFrom = document.getElementById('dateFrom')?.value;
+    const dateTo = document.getElementById('dateTo')?.value;
+    const selectedOffices = Array.from(document.getElementById('officeFilter')?.selectedOptions || [])
+        .map(opt => opt.text).filter(t => t !== 'All Offices');
+    const selectedPersonnel = Array.from(document.getElementById('personnelFilter')?.selectedOptions || [])
+        .map(opt => opt.text).filter(t => t !== 'All Personnel');
+    const selectedStatus = document.getElementById('statusFilter')?.value;
+    
+    if (dateFrom) tags.push(`From: ${dateFrom}`);
+    if (dateTo) tags.push(`To: ${dateTo}`);
+    if (selectedOffices.length > 0) tags.push(`Office: ${selectedOffices.join(', ')}`);
+    if (selectedPersonnel.length > 0) tags.push(`Personnel: ${selectedPersonnel.join(', ')}`);
+    if (selectedStatus) tags.push(`Status: ${selectedStatus}`);
+    
+    if (tags.length > 0) {
+        filterTagsDiv.innerHTML = tags.map(tag => 
+            `<span class="badge bg-primary me-1">${tag}</span>`
+        ).join('');
+        activeFiltersDiv.style.display = 'block';
+    } else {
+        activeFiltersDiv.style.display = 'none';
+    }
+}
+
+/**
+ * Render dashboard with filtered data
+ */
+function renderDashboardWithFilteredData() {
+    const dataToUse = appState.filteredData.length > 0 ? appState.filteredData : appState.sheetData;
+    
+    // Temporarily swap data
+    const originalData = appState.sheetData;
+    appState.sheetData = dataToUse;
+    
+    // Re-render all components
+    renderSummaryCards();
+    renderRockReviewCharts();
+    createOfficeDistributionChart();
+    createOfficePerformanceChart();
+    createTrendLineChart();
+    renderDataTable();
+    
+    // Restore original data
+    appState.sheetData = originalData;
+}
+
+/**
+ * Helper function to parse dates
+ */
+function parseDate(dateStr) {
+    if (!dateStr) return null;
+    
+    // Try MM/DD/YYYY format
+    const parts = dateStr.toString().split('/');
+    if (parts.length === 3) {
+        const month = parseInt(parts[0]) - 1;
+        const day = parseInt(parts[1]);
+        const year = parseInt(parts[2]);
+        return new Date(year, month, day);
+    }
+    
+    // Try standard date parse
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+// ============================================
 // PDF EXPORT FUNCTIONS
 // ============================================
 
@@ -2176,23 +2421,9 @@ console.log('Sheet ID:', CONFIG.SHEET_ID);
  * Export dashboard to PDF with charts
  */
 async function exportToPDF() {
+    showMessage('Generating PDF... This may take a moment', 'info');
+    
     try {
-        // Check if jsPDF is loaded
-        if (!window.jspdf) {
-            showMessage('PDF library not loaded. Please refresh the page and try again.', 'danger');
-            console.error('jsPDF library not found');
-            return;
-        }
-
-        // Check if html2canvas is loaded
-        if (!window.html2canvas) {
-            showMessage('HTML2Canvas library not loaded. Please refresh the page and try again.', 'danger');
-            console.error('html2canvas library not found');
-            return;
-        }
-
-        showMessage('Generating PDF... This may take a moment', 'info');
-        
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
@@ -2251,48 +2482,47 @@ async function exportToPDF() {
             yPosition += 20;
         }
         
-        // Add new page for charts
-        pdf.addPage();
-        yPosition = 20;
-        
-        // Capture charts using Chart.js built-in toBase64Image()
+        // Capture and add charts
+        yPosition += 10;
         
         // Pie Chart
-        if (appState.charts.pieChart) {
-            try {
-                pdf.setFontSize(12);
-                pdf.setTextColor(30, 58, 138);
-                pdf.text('Office Distribution', 15, yPosition);
-                yPosition += 10;
-                
-                const pieImgData = appState.charts.pieChart.toBase64Image();
-                pdf.addImage(pieImgData, 'PNG', 40, yPosition, 120, 80);
-                yPosition += 90;
-            } catch (err) {
-                console.error('Error adding pie chart:', err);
-            }
+        const pieChartElement = document.getElementById('pieChart');
+        if (pieChartElement) {
+            pdf.setFontSize(12);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text('Office Distribution', 15, yPosition);
+            yPosition += 10;
+            
+            const pieCanvas = await html2canvas(pieChartElement.parentElement, { 
+                scale: 2, 
+                backgroundColor: '#ffffff'
+            });
+            const pieImgData = pieCanvas.toDataURL('image/png');
+            pdf.addImage(pieImgData, 'PNG', 15, yPosition, 85, 60);
+            yPosition += 70;
         }
         
-        // Add new page for bar chart
-        if (yPosition > pageHeight - 100) {
+        // Add new page for more charts
+        if (yPosition > pageHeight - 80) {
             pdf.addPage();
             yPosition = 20;
         }
         
         // Bar Chart
-        if (appState.charts.barChart) {
-            try {
-                pdf.setFontSize(12);
-                pdf.setTextColor(30, 58, 138);
-                pdf.text('Office Performance Comparison', 15, yPosition);
-                yPosition += 10;
-                
-                const barImgData = appState.charts.barChart.toBase64Image();
-                pdf.addImage(barImgData, 'PNG', 15, yPosition, 180, 90);
-                yPosition += 100;
-            } catch (err) {
-                console.error('Error adding bar chart:', err);
-            }
+        const barChartElement = document.getElementById('barChart');
+        if (barChartElement) {
+            pdf.setFontSize(12);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text('Office Performance Comparison', 15, yPosition);
+            yPosition += 10;
+            
+            const barCanvas = await html2canvas(barChartElement.parentElement, { 
+                scale: 2,
+                backgroundColor: '#ffffff'
+            });
+            const barImgData = barCanvas.toDataURL('image/png');
+            pdf.addImage(barImgData, 'PNG', 15, yPosition, 180, 70);
+            yPosition += 80;
         }
         
         // Add new page for line chart
@@ -2300,19 +2530,39 @@ async function exportToPDF() {
         yPosition = 20;
         
         // Line Chart
-        if (appState.charts.lineChart) {
-            try {
-                pdf.setFontSize(12);
-                pdf.setTextColor(30, 58, 138);
-                pdf.text('Performance Trend Over Time', 15, yPosition);
-                yPosition += 10;
-                
-                const lineImgData = appState.charts.lineChart.toBase64Image();
-                pdf.addImage(lineImgData, 'PNG', 15, yPosition, 180, 100);
-                yPosition += 110;
-            } catch (err) {
-                console.error('Error adding line chart:', err);
-            }
+        const lineChartElement = document.getElementById('lineChart');
+        if (lineChartElement) {
+            pdf.setFontSize(12);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text('Performance Trend Over Time', 15, yPosition);
+            yPosition += 10;
+            
+            const lineCanvas = await html2canvas(lineChartElement.parentElement.parentElement, { 
+                scale: 2,
+                backgroundColor: '#ffffff'
+            });
+            const lineImgData = lineCanvas.toDataURL('image/png');
+            pdf.addImage(lineImgData, 'PNG', 15, yPosition, 180, 100);
+            yPosition += 110;
+        }
+        
+        // Add filtered data summary if filters are active
+        if (appState.filteredData.length > 0) {
+            pdf.addPage();
+            yPosition = 20;
+            pdf.setFontSize(14);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text('Active Filters', 15, yPosition);
+            yPosition += 10;
+            
+            pdf.setFontSize(10);
+            pdf.setTextColor(0, 0, 0);
+            
+            const filterTags = document.querySelectorAll('#filterTags .badge');
+            filterTags.forEach(tag => {
+                pdf.text('• ' + tag.textContent, 20, yPosition);
+                yPosition += 7;
+            });
         }
         
         // Footer on last page
