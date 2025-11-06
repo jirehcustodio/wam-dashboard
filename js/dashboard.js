@@ -2323,3 +2323,6 @@ async function exportToPDF() {
         showMessage('Error generating PDF: ' + error.message, 'danger');
     }
 }
+
+// Make exportToPDF globally accessible
+window.exportToPDF = exportToPDF;
