@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WAM Dashboard - Secure Access</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <title>MyNaga App WAM - Secure Access</title>
+    <link rel="icon" type="image/x-icon" href="https://d1mjro1kcovha8.cloudfront.net/nightfall/images/mynaga_app_logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -36,9 +36,12 @@
             }
         }
         .logo-icon {
-            font-size: 64px;
             text-align: center;
             margin-bottom: 20px;
+        }
+        .logo-icon img {
+            max-width: 120px;
+            height: auto;
         }
         .login-title {
             text-align: center;
@@ -114,10 +117,12 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="logo-icon">🔐</div>
-        <h2 class="login-title">WAM Dashboard</h2>
+        <div class="logo-icon">
+            <img src="https://d1mjro1kcovha8.cloudfront.net/nightfall/images/mynaga_app_logo.png" alt="MyNaga App Logo">
+        </div>
+        <h2 class="login-title">MyNaga App WAM</h2>
         <p class="login-subtitle">
-            <i class="bi bi-shield-lock"></i> Secure Access Required
+            <i class="bi bi-shield-lock"></i> Weekly Accountability Meeting Dashboard
         </p>
         
         <div id="errorMessage" class="error-message">
